@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چت‌بات هوش مصنوعی</title>
+    <!-- فونت و آیکون‌ها -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #f7f7f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 95vh;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: #202123;
+            color: white;
+            padding: 18px 24px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header i {
+            color: #10a37f;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #fafafa;
+        }
+        .message {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            font-size: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #10a37f;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+        .message.bot {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #1e1e1e;
+            border-bottom-left-radius: 6px;
+        }
+        .message.error {
+            align-self: center;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .input-area {
+            display: flex;
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #ddd;
+            gap: 12px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-area input:focus {
+            border-color: #10a37f;
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.2);
+        }
+        .input-area button {
+            background: #10a37f;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-area button:hover {
+            background: #0d8b6e;
+        }
+        .input-area button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #e9ecef;
+            padding: 12px 18px;
+            border-radius: 20px;
+            border-bottom-left-radius: 6px;
+            color: #555;
+            font-size: 14px;
+            gap: 4px;
+        }
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            padding: 8px;
+            background: #fafafa;
+        }
+        /* اسکرول بار زیبا */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <i class="fas fa-robot"></i>
+            دستیار هوش مصنوعی
+        </div>
+
+        <div class="messages" id="messageContainer">
+            <!-- پیام خوش‌آمدگویی (اختیاری) -->
+            <div class="message bot">سلام! چطور می‌تونم کمکت کنم؟</div>
+            <!-- پیام‌های جدید به اینجا اضافه می‌شوند -->
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span>●</span><span>●</span><span>●</span>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="پیام خود را بنویسید..." />
+            <button id="sendBtn"><i class="fas fa-paper-plane"></i> ارسال</button>
+        </div>
+        <div class="footer">🔒 تمام مکالمات ناشناس هستند</div>
+    </div>
+
+    <script>
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+        const messageContainer = document.getElementById('messageContainer');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // افزودن پیام به صفحه
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            messageContainer.appendChild(div);
+            // اسکرول به پایین
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+        // نمایش/مخفی کردن وضعیت تایپ
+        function setTyping(visible) {
+            typingIndicator.style.display = visible ? 'flex' : 'none';
+            // اسکرول به پایین برای دیدن وضعیت تایپ
+            if (visible) {
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+            }
+        }
+
+        // ارسال پیام به سرور
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // غیرفعال کردن دکمه و نمایش پیام کاربر
+            sendBtn.disabled = true;
+            userInput.value = '';
+            addMessage(message, 'user');
+
+            // نمایش وضعیت تایپ
+            setTyping(true);
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // مخفی کردن وضعیت تایپ
+                setTyping(false);
+
+                if (response.ok) {
+                    addMessage(data.reply, 'bot');
+                } else {
+                    addMessage(`❌ ${data.error || 'خطای ناشناخته'}`, 'error');
+                }
+            } catch (error) {
+                setTyping(false);
+                addMessage(`❌ خطای شبکه: ${error.message}`, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // رویدادهای کلیک و اینتر
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // فوکوس اولیه روی ورودی
+        window.onload = () => userInput.focus();
+    </script>
+</body>
+</html>
